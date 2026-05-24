@@ -19,6 +19,11 @@ if DJANGO_ENV == 'production' and not SECRET_KEY:
 
 SECRET_KEY = SECRET_KEY or 'dev-only-insecure-key'
 
+
+def _is_postgres_scheme(scheme: str) -> bool:
+    return scheme.lower().startswith(('postgres', 'postgresql'))
+
+
 def _normalize_allowed_host(host: str) -> str:
     host = host.strip()
     if host.startswith('*.'):
@@ -83,7 +88,7 @@ if DJANGO_ENV == 'production' and not DATABASE_URL:
 
 if DATABASE_URL:
     parsed = urlparse(DATABASE_URL)
-    if not parsed.scheme.startswith(('postgres', 'postgresql')):
+    if not _is_postgres_scheme(parsed.scheme):
         raise ImproperlyConfigured('Unsupported database scheme in DATABASE_URL.')
     if not parsed.path or parsed.path == '/':
         raise ImproperlyConfigured('DATABASE_URL must include a database name.')
